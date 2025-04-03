@@ -4,7 +4,7 @@ import 'routes/navigation_service.dart';
 import 'theme/theme.dart';
 
 void main() {
-  runApp(const MyApp()); // Added 'const' here
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -18,9 +18,9 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
-      navigatorKey: NavigationService.navigatorKey, // Use the global navigator key
-      onGenerateRoute: AppRoutes.generateRoute, // Use the route generator
-      initialRoute: '/splash', // Set the initial route
+      navigatorKey: NavigationService.navigatorKey,
+      onGenerateRoute: AppRoutes.generateRoute, 
+      initialRoute: '/splash', 
     );
   }
 }
