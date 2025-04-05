@@ -156,7 +156,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               // Navigate to HomeScreen after successful login
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (context) => HomeScreen()),
+                                MaterialPageRoute(builder: (context) => HomeScreen(
+                                  isDarkMode: false, // Provide a default value or a variable
+                                  onThemeChanged: (bool value) {
+                                    // Handle theme change logic here
+                                  },
+                                )),
                               );
                             }
                           },

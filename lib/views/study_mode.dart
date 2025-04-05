@@ -1,148 +1,303 @@
 import 'package:flutter/material.dart';
+import 'dart:async'; // For the countdown timer
+import '../widgets/category_card.dart'; // Import the CategoryCard widget
+import '../widgets/search.dart' as custom; // Alias the SearchBar widget
+import '../widgets/course_card.dart'; // Import the global favoriteCourses list
 
-class StudyModePage extends StatefulWidget {
-  const StudyModePage({super.key});
+class StudyModeScreen extends StatefulWidget {
+  const StudyModeScreen({super.key});
 
   @override
-  _StudyModePageState createState() => _StudyModePageState();
+  _StudyModeScreenState createState() => _StudyModeScreenState();
 }
 
-class _StudyModePageState extends State<StudyModePage> {
-  final List<Map<String, dynamic>> questions = [
-    {
-      'question': 'What is 2 + 2?',
-      'answer': '4',
-      'understood': false,
-    },
-    {
-      'question': 'What is the chemical symbol for water?',
-      'answer': 'H2O',
-      'understood': false,
-    },
-    {
-      'question': 'Who was the first president of the USA?',
-      'answer': 'George Washington',
-      'understood': false,
-    },
-    {
-      'question': 'Translate "Hello" to French.',
-      'answer': 'Bonjour',
-      'understood': false,
-    },
+class _StudyModeScreenState extends State<StudyModeScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> filteredCategories = [];
+  int _countdown = 10; // Countdown timer value
+  Timer? _timer; // Timer instance
+
+  final List<Map<String, dynamic>> categories = [
+    {'title': 'Technical Education', 'icon': Icons.engineering},
+    {'title': 'Science', 'icon': Icons.science},
+    {'title': 'Commercial', 'icon': Icons.business},
+    {'title': 'General', 'icon': Icons.public},
+    {'title': 'Arts', 'icon': Icons.palette},
   ];
 
-  int currentIndex = 0;
+  final List<String> recentStudies = [
+    'OL Mathematics',
+    'Computer Science',
+    'Engineering Science',
+  ];
 
-  void _markAsUnderstood() {
-    setState(() {
-      questions[currentIndex]['understood'] = true;
+  @override
+  void initState() {
+    super.initState();
+    filteredCategories = categories; // Initialize with all categories
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showPopupMessage(); // Show the popup message after the screen is built
     });
   }
 
-  void _markForReview() {
+  void _onSearch(String query) {
     setState(() {
-      questions[currentIndex]['understood'] = false;
+      filteredCategories = categories
+          .where((category) =>
+              category['title'].toLowerCase().contains(query.toLowerCase()))
+          .toList();
     });
   }
 
-  void _nextQuestion() {
-    if (currentIndex < questions.length - 1) {
-      setState(() {
-        currentIndex++;
-      });
-    }
+  void _takeTest() {
+    _showDialog(context, 'Take a Test', 'This feature is coming soon!');
   }
 
-  void _previousQuestion() {
-    if (currentIndex > 0) {
-      setState(() {
-        currentIndex--;
-      });
-    }
+  void _showDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showPopupMessage() {
+    // Start the countdown timer
+    _startCountdown();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissing by tapping outside
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Get Set USER!!'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Breathe in and out. Relax your mind, drink a glass of water, and let\'s begin.',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Starting in $_countdown seconds...',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _timer?.cancel(); // Cancel the timer
+                    Navigator.pop(context); // Close the dialog
+                  },
+                  child: const Text('Skip'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    ).then((_) {
+      // Ensure the timer is canceled when the dialog is dismissed
+      _timer?.cancel();
+    });
+  }
+
+  void _startCountdown() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_countdown > 1) {
+        setState(() {
+          _countdown--;
+        });
+      } else {
+        timer.cancel();
+        if (mounted) {
+          Navigator.pop(context); // Close the dialog automatically after countdown
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when the widget is disposed
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentQuestion = questions[currentIndex];
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue.shade900,
-        title: Text('Study Mode'),
+        title: const Text('Study Mode'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Question Text
-            Text(
-              currentQuestion['question'],
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue.shade900,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Greeting Text
+                  Text(
+                    'What do you want to study, Rickson?',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Search Bar
+                  custom.SearchBar(
+                    controller: _searchController,
+                    onSearch: _onSearch,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Categories Section
+                  Text(
+                    'Categories',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: filteredCategories.length,
+                      itemBuilder: (context, index) {
+                        final category = filteredCategories[index];
+                        return CategoryCard(
+                          title: category['title'],
+                          icon: category['icon'],
+                          onTap: () {
+                            // Handle category tap
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Recent Study Section
+                  Text(
+                    'Recent Study',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue.shade900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: recentStudies.length,
+                      itemBuilder: (context, index) {
+                        final course = recentStudies[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 10.0),
+                          child: CourseCard(
+                            title: course,
+                            backgroundColor: Colors.green.shade100,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Favorite Courses Section
+                  if (favoriteCourses.isNotEmpty) ...[
+                    Text(
+                      'Favorite Courses',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue.shade900,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 100,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: favoriteCourses.length,
+                        itemBuilder: (context, index) {
+                          final course = favoriteCourses[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 10.0),
+                            child: CourseCard(
+                              title: course,
+                              backgroundColor: Colors.blue.shade100,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ] else ...[
+                    const Text(
+                      'No favorite courses yet.',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  ],
+                ],
               ),
-              textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+          ),
 
-            // Answer Text
-            Text(
-              'Answer: ${currentQuestion['answer']}',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey.shade700,
+          // Button to Take a Test
+          Positioned(
+            bottom: 16,
+            right: 16, // Move to the bottom-right corner
+            child: ElevatedButton.icon(
+              onPressed: _takeTest,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0, vertical: 12.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
-              textAlign: TextAlign.center,
+              icon: const Icon(
+                Icons.emoji_emotions, // Smiling icon
+                color: Colors.white,
+              ),
+              label: const Text(
+                'Take a Test',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
-            SizedBox(height: 20),
-
-            // Mark as Understood or Review Later
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: _markAsUnderstood,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
-                  child: Text('Mark as Understood'),
-                ),
-                SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _markForReview,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                  ),
-                  child: Text('Review Later'),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-
-            // Navigation Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton(
-                  onPressed: _previousQuestion,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade900,
-                  ),
-                  child: Text('Previous'),
-                ),
-                ElevatedButton(
-                  onPressed: _nextQuestion,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade900,
-                  ),
-                  child: Text('Next'),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
