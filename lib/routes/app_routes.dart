@@ -19,7 +19,12 @@ class AppRoutes {
       case signup:
         return MaterialPageRoute(builder: (_) => SignupScreen());
       case home:
-        return MaterialPageRoute(builder: (_) => HomeScreen());
+        return MaterialPageRoute(builder: (_) => HomeScreen(
+          isDarkMode: false, // Replace with the appropriate value
+          onThemeChanged: (bool value) {
+            // Implement the theme change logic here
+          },
+        ));
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

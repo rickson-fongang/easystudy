@@ -1,7 +1,8 @@
 class RouteNames {
-  static const String login = '/login';
+  static const String splash = '/';
+  static const String onboarding = '/onboarding';
   static const String signup = '/signup';
   static const String home = '/home';
-  static const String studyMode = '/study-mode'; // Add Study Mode route
-  static const String community = '/community'; // Add Community route
+  static const String studyMode = '/studyMode';
+  static const String community = '/community';
 }
