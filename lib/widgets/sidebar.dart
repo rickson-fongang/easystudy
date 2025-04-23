@@ -99,7 +99,10 @@ class _SidebarState extends State<Sidebar> {
                 ),
               ),
               onTap: () {
-                // Handle navigation or actions for the favorite course
+                // Example: Show a SnackBar with the selected course name
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Selected course: $course')),
+                );
               },
             );
           }).toList(),
